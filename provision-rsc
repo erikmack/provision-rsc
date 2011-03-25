@@ -1,0 +1,60 @@
+#!/usr/bin/make -f
+
+# Implemented as a makefile, so that it's possible
+# to resume a provisioning that was interrupted by an
+# error.
+#
+# Usage:
+#       provision-rsc
+#       provision-rsc clean
+#
+#
+
+all: /tmp/update-world-stamp
+
+# Perform a world update
+/tmp/update-world-stamp: /tmp/e2fs-remove-stamp
+        emerge -DvNut world \
+        && touch $@
+
+# The world update will be blocked until e2fsprogs-libs is removed
+/tmp/e2fs-remove-stamp: /tmp/portage-update-stamp
+        ([[ -e /var/db/pkg/sys-libs/e2fsprogs-libs-1.41.3-r1 ]] \
+        && emerge --unmerge e2fsprogs-libs \
+        && touch $@) \
+        || touch $@
+
+# Before emerging software, we get the latest portage.
+# Currently RSC ships with v2.1.6 ... test for that old
+# version and update it if we find it.
+# Alternatively, if we don't find v2.1.6, assume portage
+# has been updated (and write the stamp)
+/tmp/portage-update-stamp: /tmp/emerge-sync-stamp
+        ((emerge --version | egrep "^Portage 2.1.6" >/dev/null) \
+        && emerge portage \
+        && touch $@) \
+        || touch $@
+
+# I'd prefer to skip the emerge --sync, but the snapshot tarball
+# alone can have manifest inconsistencies that block the world update
+/tmp/emerge-sync-stamp: /usr/portage
+        emerge --sync \
+        && touch $@
+
+# Extract portage snapshot
+/usr/portage: /tmp/portage-latest.tar.bz2
+        cd /usr \
+        && tar -xf /tmp/portage-latest.tar.bz2 \
+        && touch $@
+
+# Get latest portage snapshot
+/tmp/portage-latest.tar.bz2:
+        cd /tmp \
+        && wget http://distfiles.gentoo.org/snapshots/portage-latest.tar.bz2
+
+# After a successful setup, clean up
+clean:
+        -rm /tmp/*-stamp
+        -rm /tmp/portage-latest.tar.bz2
+
+.PHONY: all clean
