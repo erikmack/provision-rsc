@@ -1,14 +1,19 @@
 #!/usr/bin/make -f
 
 # Implemented as a makefile, so that it's possible
-# to resume a provisioning that was interrupted by an
-# error.
+# to resume a provisioning that was interrupted 
+# (error condition or otherwise)
 #
 # Usage:
 #       provision-rsc
 #       provision-rsc clean
 #
-#
+# TODO: 
+# 	Sanity check ... is this even Gentoo?
+# 	Set up binhost/nfs export (as special targets)
+# 	inject use flags into make.conf
+# 	add GPL
+# 	
 
 all: /tmp/update-world-stamp
 
@@ -18,9 +23,15 @@ all: /tmp/update-world-stamp
 	&& touch $@
 
 # The world update will be blocked until e2fsprogs-libs is removed
-/tmp/e2fs-remove-stamp: /tmp/portage-update-stamp
+/tmp/e2fs-remove-stamp: /tmp/use-inject-stamp
 	([[ -e /var/db/pkg/sys-libs/e2fsprogs-libs-1.41.3-r1 ]] \
 	&& emerge --unmerge e2fsprogs-libs \
+	&& touch $@) \
+	|| touch $@
+
+/tmp/use-inject-stamp: /tmp/portage-update-stamp
+	((grep "\\-nls" /etc/make.conf \
+		|| echo USE=\"\$${USE} -nls\" >>/etc/make.conf) \
 	&& touch $@) \
 	|| touch $@
 
