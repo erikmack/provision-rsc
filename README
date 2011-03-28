@@ -1,0 +1,33 @@
+Gentoo is great!  The Rackspace Cloud is great!
+
+But, the initial state of a new Gentoo image in the Rackspace Cloud is
+crusty - there is no portage tree, and the installed package base is
+quite old.  To bring it current requires several hours of
+intervention.
+
+This script automates the process.  Now I can issue:
+
+wget http://github.com/erikmack/provision-rsc/files/provision-rsc \
+	&& chmod +x provision-rsc && ./provision-rsc
+
+... and after some emerging I'll have a current system.
+
+Because the script is implemented as a makefile, it can be resumed if
+interrupted (due to error, or user termination) without repeating
+unnecessary preceding steps.
+
+Also, it becomes easy to add targets which extend or modify the
+default behavior.  
+
+For example, one goal is to be able to set up not only a seed server
+which syncs from the Gentoo repositories (the current behavior), but
+also downstream servers that sync from the seed.
+
+Or, to customize your server with specific applications, you can add
+targets that test for the binary and emerge the package if the binary
+isn't found.
+
+I hope you find the script helpful.  Contact me with questions through
+the Github project page.
+
+
