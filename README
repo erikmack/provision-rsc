@@ -7,7 +7,7 @@ intervention.
 
 This script automates the process.  Now I can issue:
 
-wget http://github.com/erikmack/provision-rsc/files/provision-rsc \
+wget https://github.com/erikmack/provision-rsc/raw/master/provision-rsc \
 	&& chmod +x provision-rsc && ./provision-rsc
 
 ... and after some emerging I'll have a current system.
